@@ -1,5 +1,6 @@
 /**
  * Code made by github.com/SavjeeTutorials
+ * Translated to typescript by github.com/Mytsu
  */
 
 import { SHA256 } from 'crypto-js';
