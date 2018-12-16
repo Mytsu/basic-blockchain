@@ -1,9 +1,17 @@
-import { Block, Blockchain } from './block';
+import { Block, Blockchain, Transaction } from './block';
 
 let coin = new Blockchain();
 
-console.log('Mining block 1');
-coin.addBlock(new Block(1, "10/07/2017", { amount: 4 }));
+coin.createTransaction(new Transaction('ad1', 'ad2', 100));
 
-console.log('Mining block 2');
-coin.addBlock(new Block(2, "12/07/2017", { amount: 10 }));
+coin.createTransaction(new Transaction('ad2', 'ad1', 50));
+
+console.log('\nStarting miner...');
+coin.minePendingTransactions('xavier-address');
+
+console.log('\nBalance of xavier is: ' + coin.getBalanceOfAddress('xavier-address'));
+
+console.log('\nStarting miner again...');
+coin.minePendingTransactions('xavier-address');
+
+console.log('\nBalance of xavier is: ' + coin.getBalanceOfAddress('xavier-address'));

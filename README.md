@@ -6,6 +6,8 @@
 
 Basic implementation of a blockchain. Made up with typescript while following @SavjeeTutorials [video](https://www.youtube.com/watch?v=zVqczFZr124).
 
+As said by the original author, this is made for educational purpuses only. The project is made in Typescript to allow better readabillity.
+
 ## Install
 
 ```bash
