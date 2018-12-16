@@ -6,6 +6,7 @@
   "types": "dist/index.d.ts",
   "license": "MIT",
   "dependencies": {
+    "@types/crypto-js": "^3.1.43",
     "crypto-js": "^3.1.9-1"
   },
   "keywords": [

@@ -2,7 +2,7 @@
  * Code made by github.com/SavjeeTutorials
  */
 
-import * as sha256 from 'crypto-js/sha256'
+import { SHA256 } from 'crypto-js';
 
 export class Block {
 
@@ -13,7 +13,7 @@ export class Block {
     }
 
     calculateHash() {
-        return sha256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nonce).toString();
+        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nonce).toString();
     }
 
     mineBlock(difficulty: number) {
