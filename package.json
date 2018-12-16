@@ -1,7 +1,7 @@
 {
   "name": "@mytsu/blockchain",
   "description": "Basic implementation of a blockchain",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "main": "dist/block.js",
   "types": "dist/block.d.ts",
   "license": "MIT",
