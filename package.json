@@ -11,5 +11,9 @@
   "keywords": [
     "mytsu",
     "blockchain"
-  ]
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node ./dist/index.js"
+  }
 }
