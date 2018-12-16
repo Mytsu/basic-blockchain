@@ -3,14 +3,18 @@
  * Translated to typescript by github.com/Mytsu
  */
 
-import { SHA256 } from 'crypto-js';
-import { ec } from 'elliptic';
+import {
+    SHA256
+} from 'crypto-js';
+import {
+    ec
+} from 'elliptic';
 
 const secp = new ec('secp256k1');
 
 export class Transaction {
 
-    private signature: string;
+    private signature: ec.Signature;
 
     constructor(public fromAddress: string, public toAddress: string, public amount: number) {}
 
@@ -19,23 +23,22 @@ export class Transaction {
     }
 
     signTransaction(signingKey: ec.KeyPair) {
-        if(signingKey.getPublic('hex') !== this.fromAddress) {
+        if (signingKey.getPublic('hex') !== this.fromAddress) {
             throw new Error('You cannot sign transactions for other wallets!');
         }
 
         const hashTx = this.calculateHash();
         const sig = signingKey.sign(hashTx, 'base64');
-        this.signature = sig.toDER('hex');
+        this.signature = sig;
     }
 
     isValid() {
-        if(this.fromAddress === null) return true;
+        if (this.fromAddress === null) return true;
 
-        if(!this.signature || this.signature.length === 0) 
+        if (!this.signature || this.signature.toDER('hex').length === 0)
             throw new Error('No signature in this transaction!');
-
-        const publicKey = secp.keyFromPublic(new Buffer(this.fromAddress), 'hex');
-        return publicKey.verify(this.calculateHash(), <ec.Signature><unknown>this.signature); // have no f idea why @types/elliptic is so messy
+        const publicKey = secp.keyFromPublic( < Buffer > < unknown > this.fromAddress, 'hex');
+        return publicKey.verify(this.calculateHash(), this.signature);
     }
 }
 
@@ -57,6 +60,14 @@ export class Block {
             this.hash = this.calculateHash();
         }
         console.log("Block mined: " + this.hash);
+    }
+
+    hasValidTransactions(): boolean {
+        this.transactions.forEach((tx) => {
+            if (!tx.isValid())
+                return false;
+        });
+        return true;
     }
 }
 
@@ -94,7 +105,13 @@ export class Blockchain {
         this.pendingTransactions = [];
     }
 
-    createTransaction(transaction: Transaction): void {
+    addTransaction(transaction: Transaction): void {
+        if (!transaction.fromAddress || !transaction.toAddress)
+            throw new Error('Transaction must include from and to addresses');
+
+        if (!transaction.isValid())
+            throw new Error('Cannot add an invalid transaction to the chain');
+
         this.pendingTransactions.push(transaction);
     }
 
@@ -103,10 +120,10 @@ export class Blockchain {
 
         this.chain.forEach(block => {
             block.transactions.forEach(transaction => {
-                if(transaction.fromAddress === address) 
+                if (transaction.fromAddress === address)
                     balance -= transaction.amount;
 
-                if(transaction.toAddress === address)
+                if (transaction.toAddress === address)
                     balance += transaction.amount;
             });
         });
@@ -114,19 +131,27 @@ export class Blockchain {
     }
 
     isChainValid(): boolean {
+
+        const realGenesis = JSON.stringify(this.createGenesisBlock());
+
+        if (realGenesis !== JSON.stringify(this.chain[0]))
+            return false;
+        else if (realGenesis === JSON.stringify(this.chain[0]))
+            return true;
+
         for (let i = 1; i < this.chain.length; i++) {
-          const currentBlock = this.chain[i];
-          const previousBlock = this.chain[i - 1];
-    
-          if (currentBlock.hash !== currentBlock.calculateHash()) {
-            return false;
-          }
-    
-          if (currentBlock.previousHash !== previousBlock.calculateHash()) {
-            return false;
-          }
+            const currentBlock = this.chain[i];
+            const previousBlock = this.chain[i - 1];
+
+            if (!currentBlock.hasValidTransactions())
+                return false;
+
+            if (currentBlock.hash !== currentBlock.calculateHash())
+                return false;
+
+            if (currentBlock.previousHash !== previousBlock.calculateHash())
+                return false;
         }
-    
         return true;
-      }
+    }
 }
