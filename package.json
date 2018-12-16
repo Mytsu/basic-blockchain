@@ -2,12 +2,14 @@
   "name": "@mytsu/blockchain",
   "description": "Basic implementation of a blockchain",
   "version": "1.0.0",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/block.js",
+  "types": "dist/block.d.ts",
   "license": "MIT",
   "dependencies": {
     "@types/crypto-js": "^3.1.43",
-    "crypto-js": "^3.1.9-1"
+    "@types/elliptic": "^6.4.0",
+    "crypto-js": "^3.1.9-1",
+    "elliptic": "^6.4.1"
   },
   "keywords": [
     "mytsu",
@@ -15,6 +17,6 @@
   ],
   "scripts": {
     "build": "tsc",
-    "start": "npm run build && node ./dist/index.js"
+    "start": "npm run build && node ./dist/block.js"
   }
 }

@@ -4,9 +4,39 @@
  */
 
 import { SHA256 } from 'crypto-js';
+import { ec } from 'elliptic';
+
+const secp = new ec('secp256k1');
 
 export class Transaction {
+
+    private signature: string;
+
     constructor(public fromAddress: string, public toAddress: string, public amount: number) {}
+
+    calculateHash() {
+        return SHA256(this.fromAddress + this.toAddress + this.amount).toString();
+    }
+
+    signTransaction(signingKey: ec.KeyPair) {
+        if(signingKey.getPublic('hex') !== this.fromAddress) {
+            throw new Error('You cannot sign transactions for other wallets!');
+        }
+
+        const hashTx = this.calculateHash();
+        const sig = signingKey.sign(hashTx, 'base64');
+        this.signature = sig.toDER('hex');
+    }
+
+    isValid() {
+        if(this.fromAddress === null) return true;
+
+        if(!this.signature || this.signature.length === 0) 
+            throw new Error('No signature in this transaction!');
+
+        const publicKey = secp.keyFromPublic(new Buffer(this.fromAddress), 'hex');
+        return publicKey.verify(this.calculateHash(), <ec.Signature><unknown>this.signature); // have no f idea why @types/elliptic is so messy
+    }
 }
 
 export class Block {
@@ -44,7 +74,7 @@ export class Blockchain {
     }
 
     createGenesisBlock(): Block {
-        return new Block("01/01/2017", Array(new Transaction("Genesis Block", "Genesis Transaction", 0)), "0");
+        return new Block(Date.parse("2018-12-16").toString(), [], "0");
     }
 
     getLatestBlock(): Block {
@@ -52,15 +82,16 @@ export class Blockchain {
     }
 
     minePendingTransactions(miningRewardAddress: string): void {
+        const rewardTx = new Transaction(null, miningRewardAddress, this.miningReward);
+        this.pendingTransactions.push(rewardTx);
+
         let block = new Block(Date.now().toString(), this.pendingTransactions);
         block.mineBlock(this.difficulty);
 
         console.log('Block successfully mined!');
         this.chain.push(block);
 
-        this.pendingTransactions = [
-            new Transaction(null, miningRewardAddress, this.miningReward)
-        ]
+        this.pendingTransactions = [];
     }
 
     createTransaction(transaction: Transaction): void {
