@@ -17,11 +17,30 @@ npm i @mytsu/blockchain
 ## Usage
 
 ```typescript
-import { Block, Blockchain } from '@mytsu/blockchain';
+import { Blockchain, Transaction } from './block';
+import { ec } from 'elliptic';
+
+const EC = new ec('secp256k1');
+
+const myKey: ec.KeyPair = EC.keyFromPrivate(<ec.KeyPair><unknown>'your private key goes here');
+const myWallet: string = myKey.getPublic('hex');
 
 let coin = new Blockchain();
-coin.addBlock(new Block(1, "10/12/2018", { amount: 4 }));
-coin.addBlock(new Block(2, "12/12/2018", { amount: 10 }));
 
-console.log('Is blockchain valid? ' + coin.isChainValid());
+const tx1 = new Transaction(myWallet, 'destination wallet goes here', 10);
+
+tx1.signTransaction(myKey);
+coin.addTransaction(tx1);
+
+console.log('\nStarting miner');
+coin.minePendingTransactions(myWallet);
+
+console.log('\nBalance of my account is: ', coin.getBalanceOfAddress(myWallet));
+
+console.log('\nIs chain valid?', coin.isChainValid());
+
 ```
+
+## Notes
+
+You might notice the ```<ec.KeyPair><unknown>``` on the private key, it's _elliptic typings_ weird settings.
