@@ -46,7 +46,7 @@ export class Block {
 
     public hash: string;
 
-    constructor(public timestamp: string, public transactions: Transaction[], public previousHash: string = '', public nonce: number = 0) {
+    constructor(public timestamp: string, public transactions: Transaction[], public previousHash: string = '', public nonce: number = 0, public log: boolean = false) {
         this.hash = this.calculateHash();
     }
 
@@ -59,7 +59,8 @@ export class Block {
             this.nonce++;
             this.hash = this.calculateHash();
         }
-        console.log("Block mined: " + this.hash);
+        if (this.log)
+            console.log("Block mined: " + this.hash);
     }
 
     hasValidTransactions(): boolean {
@@ -78,14 +79,14 @@ export class Blockchain {
     public pendingTransactions: Transaction[];
     public miningReward = 100;
 
-    constructor() {
+    constructor(public log: boolean = false) {
         this.chain = [this.createGenesisBlock()];
         this.difficulty = 2;
         this.pendingTransactions = [];
     }
 
     createGenesisBlock(): Block {
-        return new Block(Date.parse("2018-12-16").toString(), [], "0");
+        return new Block(Date.parse("2018-12-16").toString(), [], "0", 0, this.log);
     }
 
     getLatestBlock(): Block {
@@ -96,10 +97,11 @@ export class Blockchain {
         const rewardTx = new Transaction(null, miningRewardAddress, this.miningReward);
         this.pendingTransactions.push(rewardTx);
 
-        let block = new Block(Date.now().toString(), this.pendingTransactions);
+        let block = new Block(Date.now().toString(), this.pendingTransactions, null, 0, this.log);
         block.mineBlock(this.difficulty);
 
-        console.log('Block successfully mined!');
+        if (this.log)
+            console.log('Block successfully mined!');
         this.chain.push(block);
 
         this.pendingTransactions = [];
